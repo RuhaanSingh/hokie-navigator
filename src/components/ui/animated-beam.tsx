@@ -51,7 +51,7 @@ export function AnimatedBeam({ className, containerRef, fromRef, toRef, curvatur
 
   return (
     <svg fill="none" width={dim.w} height={dim.h} viewBox={`0 0 ${dim.w} ${dim.h}`} className={cn("pointer-events-none absolute left-0 top-0", className)} aria-hidden>
-      <path d={d} stroke="#D6D3D1" strokeWidth={1.5} strokeLinecap="round" />
+      <path d={d} stroke={active ? (tone === "ok" ? "#F2B8C1" : tone === "blocked" ? "#FCD34D" : "#FCA5A5") : "#D6D3D1"} strokeWidth={active ? 2 : 1.5} strokeLinecap="round" style={{ transition: "stroke 300ms" }} />
       {active && (
         <>
           <path d={d} strokeWidth={2.5} stroke={`url(#${id})`} strokeLinecap="round" />

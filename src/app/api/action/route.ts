@@ -38,6 +38,7 @@ export async function POST(req: Request) {
     switch (a.type) {
       case "reset":
         resetStore();
+        (globalThis as unknown as { __hnLlmDownUntil?: number }).__hnLlmDownUntil = 0;
         break;
       case "office_online":
         s.officeHealth[a.office].online = a.online;
@@ -58,6 +59,7 @@ export async function POST(req: Request) {
         triggerHold();
         break;
       case "mode":
+        (globalThis as unknown as { __hnLlmDownUntil?: number }).__hnLlmDownUntil = 0;
         s.mode = a.mode;
         touch();
         break;

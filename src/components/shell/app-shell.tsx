@@ -187,13 +187,13 @@ export function AppShell({ children }: { children: ReactNode }) {
               <button onClick={() => setDemoOpen(true)} className="flex h-9 w-9 items-center justify-center rounded-[8px] text-muted hover:bg-surface hover:text-text" aria-label="Demo controls (Ctrl/Cmd + Shift + D)" title="Demo controls (⌘⇧D)">
                 <SlidersHorizontal className="h-4 w-4" />
               </button>
-              <div className="flex items-center gap-2.5 border-l border-border pl-3">
+              <Link href="/login" title="Simulated sign-in screen" className="flex items-center gap-2.5 border-l border-border pl-3">
                 <div className={cn("flex h-8 w-8 items-center justify-center rounded-full text-[12px] font-semibold", role === "staff" ? "bg-[#f5f5f4] text-[#44403c]" : "bg-primary-tint text-primary")}>{role === "staff" ? "DS" : role === "system" ? "OP" : "MC"}</div>
                 <div className="hidden leading-tight lg:block">
                   <div className="text-[13px] font-medium text-text">{role === "staff" ? "Case manager" : role === "system" ? "Platform operator" : "Maya Chen"}</div>
                   <div className="text-[11.5px] text-muted">{role === "staff" ? "Dean of Students · simulated" : role === "system" ? "Monitoring · simulated" : "Junior · CS · simulated sign-in"}</div>
                 </div>
-              </div>
+              </Link>
             </div>
           </header>
           <main id="main" className="min-h-0 flex-1 overflow-y-auto bg-white">

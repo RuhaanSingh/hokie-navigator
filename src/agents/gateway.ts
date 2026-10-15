@@ -100,6 +100,7 @@ export const gateway = {
     const block = (reason: Extract<GatewayResult, { ok: false }>["reason"], message: string, label: string): GatewayResult => {
       addAudit({ caller, office, action, decision: "blocked", reason: message, dataShared: "Nothing — request stopped at gateway", caseId: ctx.caseId, level: ctx.level });
       addActivity(["personal", "gateway"], "blocked");
+      addActivity(["gateway", "monitoring"], "blocked");
       emitStep("blocked", label, message);
       return { ok: false, reason, message, ms: Date.now() - started };
     };
@@ -131,6 +132,7 @@ export const gateway = {
       const msg = `Health check failed · timed out after ${OUTAGE_TIMEOUT_MS / 1000}s`;
       addAudit({ caller, office, action, decision: "error", reason: msg, dataShared: "Nothing delivered", caseId: ctx.caseId, level: ctx.level });
       addActivity(["personal", "gateway", office], "error");
+      addActivity(["gateway", "monitoring"], "error");
       emitStep("error", `${agentName}: unavailable`, msg);
       touch();
       return { ok: false, reason: "offline", message: msg, ms: Date.now() - started };

@@ -67,20 +67,28 @@ const MODEL = () => process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
 let client: Groq | null = null;
 const groq = () => (client ??= new Groq({ apiKey: groqKey(), timeout: 6000, maxRetries: 0 }));
 
-const useLlm = () => db().mode !== "scripted" && Boolean(groqKey());
+// Circuit breaker: after an LLM failure, use scripted responses for a minute so the live demo never waits on repeated timeouts.
+const breaker = globalThis as unknown as { __hnLlmDownUntil?: number };
+const useLlm = () => db().mode !== "scripted" && Boolean(groqKey()) && (db().mode === "live" || Date.now() > (breaker.__hnLlmDownUntil ?? 0));
 
 type LlmMsg = Groq.Chat.Completions.ChatCompletionMessageParam;
 
 async function complete(messages: LlmMsg[], opts: { tools?: Groq.Chat.Completions.ChatCompletionTool[]; toolChoice?: Groq.Chat.Completions.ChatCompletionToolChoiceOption; temperature?: number } = {}) {
   const started = Date.now();
-  const res = await groq().chat.completions.create({
-    model: MODEL(),
-    messages,
-    tools: opts.tools,
-    tool_choice: opts.tools ? (opts.toolChoice ?? "auto") : undefined,
-    temperature: opts.temperature ?? 0.3,
-    max_tokens: 700,
-  });
+  let res: Groq.Chat.Completions.ChatCompletion;
+  try {
+    res = await groq().chat.completions.create({
+      model: MODEL(),
+      messages,
+      tools: opts.tools,
+      tool_choice: opts.tools ? (opts.toolChoice ?? "auto") : undefined,
+      temperature: opts.temperature ?? 0.3,
+      max_tokens: 700,
+    });
+  } catch (e) {
+    breaker.__hnLlmDownUntil = Date.now() + 60_000;
+    throw e;
+  }
   addActivity(["personal", "router"]);
   db().stats.latencies.push(Date.now() - started);
   return res.choices[0].message;
@@ -223,6 +231,8 @@ export async function runTurn(messages: ChatMessage[], lastIntent: string | unde
     step(emit, "personal_agent", "Something went wrong on my side — nothing was changed", "error");
     await streamText(emit, "Sorry, I hit a snag on my side. Nothing was changed or sent anywhere. Could you try that again?");
   }
+  // Any distress outside the dedicated safety/crisis flows still surfaces human support.
+  if (RX.distress.test(last) && !["self_harm", "medical", "crisis_intake", "crisis_choice"].includes(intent)) wellbeing(emit, "distress");
   emit({ type: "meta", intent, source });
   emit({ type: "done" });
 }
@@ -330,6 +340,39 @@ function scriptedCaseProse(r: CaseResult, preference: string) {
 
 // ---------- Scenario B: Financial Aid L0 ----------
 
+// Scripted-mode answers for the canned Scenario B questions. Every sentence is taken from the scraped pages (verified Oct 2026).
+const SAP_URL = "https://finaid.vt.edu/undergraduate/policies-regulations/satisfactory-academic-progress-sap.html";
+const SAPQA_URL = "https://finaid.vt.edu/appeals/satisfactory-academic-progress/sap-q-a.html";
+const WD_URL = "https://finaid.vt.edu/undergraduate/policies-regulations/enrollment-withdrawal.html";
+const W_URL = "https://eng.vt.edu/undergraduate/resources-support/how-to/course-withdraw.html";
+const CANNED: { test: RegExp; text: string; sources: { title: string; url: string }[] }[] = [
+  {
+    test: /\bsap\b|satisfactory academic/i,
+    text: "**Satisfactory Academic Progress (SAP)** is how Financial Aid checks that you're on track to keep your aid. It has three parts: a minimum cumulative GPA (2.0 for undergraduates), a Pace of Progress of at least 67% of attempted credits, and not exceeding 150% of your program's published length (Maximum Timeframe) [1].\n\nTo appeal, you submit a completed SAP Appeal Form; priority dates and deadlines are posted on the SAP Appeal page, and reviews can take up to 15 business days. Students are limited to 2 appeals while at Virginia Tech [2].",
+    sources: [
+      { title: "Satisfactory Academic Progress (SAP)", url: SAP_URL },
+      { title: "SAP Q & A", url: SAPQA_URL },
+    ],
+  },
+  {
+    test: /(how many|w grade|course withdraw|withdraw from (a|one) (class|course))/i,
+    text: "A course withdrawal puts a **W** on your transcript after the drop deadline. It isn't calculated into your GPA, but you stay enrolled in those credit hours, and there are no tuition or fee refunds for a withdrawn course. You can use a maximum of **three** course withdrawals in your undergraduate career [1].\n\nIf you're using financial aid, check with Financial Aid before withdrawing [2].",
+    sources: [
+      { title: "How To Course Withdraw", url: W_URL },
+      { title: "Withdrawing or Resigning", url: WD_URL },
+    ],
+  },
+  {
+    test: /(withdraw|resign)/i,
+    text: "If you withdraw or resign after the semester starts, your financial aid **may be reduced and leave a balance due** to the Bursar's office. The withdrawal or resignation date is the key factor in calculating any unearned federal, state, and institutional aid to return, and the Bursar uses the same date to decide whether tuition charges are reduced [1].\n\nFinancial Aid recommends talking with a financial aid counselor and the Bursar's office **before** you resign [1]. Dropping a single course with a W is different: you stay enrolled in those credits and can use up to three W's in your undergraduate career [2].",
+    sources: [
+      { title: "Withdrawing or Resigning", url: WD_URL },
+      { title: "How To Course Withdraw", url: W_URL },
+    ],
+  },
+];
+
+
 async function finaid(emit: Emit, question: string, setSource: (s: "llm" | "scripted") => void) {
   step(emit, "personal_agent", "Routing to Financial Aid agent", "done", "L0");
   const sid = uid("s-");
@@ -378,12 +421,17 @@ async function finaid(emit: Emit, question: string, setSource: (s: "llm" | "scri
       console.warn("[agent] KB answer LLM failed, extractive fallback:", e instanceof Error ? e.message : e);
     }
   }
+  let shownSources = sources.slice(0, 3);
   if (!answer) {
     setSource("scripted");
-    answer = extractive(question, top);
+    const canned = CANNED.find((c) => c.test.test(question));
+    if (canned) {
+      answer = canned.text;
+      shownSources = canned.sources;
+    } else answer = extractive(question, top);
   }
   await streamText(emit, answer);
-  emit({ type: "sources", items: sources.slice(0, 3) });
+  emit({ type: "sources", items: shownSources });
   const conf = kbConfidence({ strong, retrievedAt: KB_RETRIEVED_AT, sources: sources.length, coverage: Math.max(...top.map((t) => t.coverage)) });
   emit({ type: "confidence", score: conf.score, checks: conf.checks });
 }
@@ -404,7 +452,7 @@ function extractive(question: string, passages: KbResult[]) {
       .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
       .replace(/^#+\s.*$/gm, "")
       .split(/(?<=[.!?])\s+|\n+/)
-      .map((s) => s.replace(/^[-*]\s*/, "").trim())
+      .map((s) => s.replace(/^[-*]\s*/, "").replace(/\*\*?(Q|A):?\*?\*?\s*/g, "").replace(/\*+/g, "").trim())
       .filter((s) => s.length > 40 && s.length < 400);
     for (const s of sentences) {
       const n = tokenize(s).filter((t) => q.has(t)).length;
