@@ -14,9 +14,9 @@ import { useStore } from "@/components/shell/store-provider";
 import { LogoMark } from "@/components/shell/logo";
 
 function StudentApproval({ action }: { action: string }) {
-  const { act, snap } = useStore();
+  const { act } = useStore();
   const [state, setState] = useState<"idle" | "sending" | "done">("idle");
-  const resolved = state === "done" || (snap && !snap.holdActive && state !== "idle");
+  const resolved = state === "done";
   return (
     <div className="flex flex-wrap items-center gap-3 rounded-[12px] border border-border bg-white p-4">
       <FileCheck2 className="h-5 w-5 text-primary" />
@@ -87,7 +87,7 @@ export function Message({ m, onQuickReply }: { m: UiMessage; onQuickReply: (t: s
         {!m.streaming && m.meta && snap?.showSimBadges && (
           <div className={cn("flex items-center gap-1.5 text-[11.5px] text-[#a8a29e]")}>
             <Sparkles className="h-3 w-3" />
-            {m.meta.source === "llm" ? "Written by LLM (Groq)" : "Scripted fallback"} · office agents simulated
+            {m.meta.source === "llm" ? "Written by LLM (Groq)" : snap.mode === "scripted" ? "Scripted response" : "Scripted fallback"} · office agents simulated
           </div>
         )}
       </div>

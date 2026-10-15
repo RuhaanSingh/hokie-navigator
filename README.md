@@ -1,36 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Hokie Navigator — VT Agent Network prototype
 
-## Getting Started
+*Tell your story once. The AI coordinates; people decide.*
 
-First, run the development server:
+This is a working prototype for the PwC × PSE Hokie Navigator case competition. It covers a student's personal agent, an agent gateway, seven simulated office agents, staff approval, a consent ledger, confidence scoring, and a full audit log. Financial Aid answers informational (L0) questions from a real snapshot of **finaid.vt.edu**. Everything else uses deterministic mock data for a fictional student, **Maya Chen**.
+
+## Run it (presenting laptop)
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local        # then paste your Groq key into GROQ_API_KEY
+npm run build && npm start        # http://localhost:3000. Present from the production build.
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **No key or no Wi-Fi?** The app still works. Set `DEMO_MODE=scripted`, or switch the mode in Demo Controls. Scripted mode runs the same gateway and case pipeline, so the UI behaves the same way.
+- **Hybrid (default):** the app calls Groq. If a call errors, times out (6 s), or returns malformed tool calls, it falls back to the scripted path without showing an error, and skips the LLM for the next 60 s so the demo never waits on repeated timeouts.
+- State lives in server memory. A restart resets it, and so does **Reset demo state**. Don't deploy this to serverless hosting.
+- The Groq key is read server-side only (`src/agents/personal-agent.ts`) and never reaches the browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Presenter controls
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Press **⌘/Ctrl + Shift + D** on any page, or open **System → Demo controls**. From there you can:
 
-## Learn More
+- Reset the demo
+- Take any office agent offline, or add latency to it
+- Fill or reopen a course section, including a variant where Plan B breaks a limit
+- Trigger the Bursar hold alert
+- Switch between Live, Hybrid, and Scripted modes
+- Show or hide the "simulated" badges
 
-To learn more about Next.js, take a look at the following resources:
+## Demo script (≈ 6 minutes)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Use two windows: **Student** (`/assistant`) and **Staff** (`/staff`). Keep a third tab on `/system` if you want the diagram to light up.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **Scenario A, Tell Your Story Once (hero, under 90 s).** Navigator → *Tell your story*.
+   - The agent responds with empathy and shows Dean of Students and Cook Counseling contacts. It asks one question. Tap **Stay enrolled if I can**.
+   - Case #NAV-2041 opens. The gateway checks consent, and 5 office agents run in parallel.
+   - The consequence engine compares options A/B/C. **Option A breaks 2 office rules**, and **Option B has the fewest consequences**. Hover any cell to see the rule it cites.
+   - Pick **B**, then **Send to Dean of Students for approval**.
+   - In the staff window, the packet appears with a red dot. It shows the goal, options, office responses, conflicts, the 4 confidence checks, and why the agent stopped. Click **Approve**.
+   - Back in the student window, execution runs step by step, each step with a level pill. You can view the drafted instructor notices. It ends with a "close the loop" summary and an audit trail link.
+2. **Scenario B, real Financial Aid data.** Ask *"What is SAP and how do I appeal?"*. You get source chips to finaid.vt.edu and a High confidence chip. Then ask *"Can I get a refund on my parking permit?"*. Confidence is Low, the agent refuses to guess, and it offers to route the question to a counselor.
+3. **Scenario C, outage.** Demo controls → Financial Aid **offline**, then re-run A. You'll see `Financial Aid agent: unavailable · health check failed`, scholarship shown as *Pending human review*, Medium confidence, "Nothing irreversible executed", the case routed to the counselor queue, and the Dean of Students asked to protect Friday's deadline. The System page shows the office as Down.
+4. **Scenario D, pre-approved plan (L3).** Open Plans, then Demo controls → **Fill** CS 3214-1. Within about 2 s the watchdog enrolls Maya in CS 3214-2 automatically and shows a toast. Reset, then use **Fill CS 3214-1 · variant: Plan B breaks a limit**. The agent **stops and asks** instead of acting.
+5. **Scenario E, refusals and wellbeing.**
+   - *"Should I stop taking my medication?"* gets no medical advice and links to health and counseling.
+   - *"Can you show me my roommate's grades?"* is blocked by the gateway and logged.
+   - Any self-harm language triggers the 988, Cook Counseling, and Dean of Students cards. No tools run.
+6. **Scenario F, consent.** Privacy → turn **Housing** off, then re-run A. Housing shows "Not contacted: consent revoked by student", and the housing row reads "Unknown — consent revoked".
+7. **Scenario G, hold (optional).** Demo controls → Trigger hold alert. On the dashboard, tap **Resolve**. The Bursar, Financial Aid, and Registrar agents find the cause, and the student approves an L2 hold review.
 
-## Deploy on Vercel
+## Architecture (mirrors the deck)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+src/agents/
+  personal-agent.ts      orchestrator: intent, Groq tool loop, hybrid fallback, prose
+  case-pipeline.ts       deterministic case: fan-out, options, staff approval, serialized execution
+  gateway.ts             the only importer of office agents: consent, allow-list, need-to-know, latency, audit, trace
+  consequence-engine.ts  compares options across office rules, counts conflicts, never chooses
+  confidence.ts          High / Medium / Low from 4 checks
+  watchdog.ts            seat and hold monitoring; L3 only inside a signed plan
+  offices/*.ts           7 simulated office agents (deterministic)
+  kb/                    finaid.vt.edu snapshot (markdown + BM25 index)
+src/lib/store.ts         in-memory store shared by all windows
+src/data/                fictional persona, office records, mock policies
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The autonomy ladder is enforced in code and shown on every action:
+
+| Level | Meaning | Who approves |
+|---|---|---|
+| **L0** | Inform | Runs automatically |
+| **L1** | Draft | Runs automatically, never submitted |
+| **L2** | Act with confirmation | The student taps Approve |
+| **L3** | Act within a pre-approved plan | Only within a plan the student signed |
+| **Staff** | Withdrawals, incompletes, reduced loads, aid, housing, visa, overrides | Always a staff member |
+
+## Data and accuracy
+
+- `scripts/scrape-finaid.ts` was run once (Oct 2026). Its output, 33 pages, is committed in `src/agents/kb/finaid/`, and nothing hits the network at runtime. `seed.md` holds the verified fallback facts.
+- Cook Counseling Center (540-231-6557) and Dean of Students (540-231-3787) contacts were checked against ucc.vt.edu and dos.vt.edu.
+- All student records, dollar amounts for the persona, policies marked "(mock)", and deadlines are fictional. Office agents are simulated, and the UI says so.
+- There are no VT logos. The wordmark and compass glyph are original.

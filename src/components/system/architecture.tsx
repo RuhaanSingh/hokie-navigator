@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
+import { createRef, useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { Bot, Database, Fingerprint, Gauge, MessageSquare, Network, Route, UserCheck } from "lucide-react";
 import type { Activity, OfficeHealth, OfficeId } from "@/lib/types";
 import { OFFICES, OFFICE_ORDER } from "@/data/offices-meta";
@@ -21,9 +21,8 @@ const SOR: Record<OfficeId, string> = {
 };
 
 function useRefs<T extends string>(ids: readonly T[]) {
-  const store = useRef<Record<string, RefObject<HTMLDivElement | null>>>({});
-  for (const id of ids) store.current[id] ??= { current: null };
-  return store.current as Record<T, RefObject<HTMLDivElement | null>>;
+  const [refs] = useState(() => Object.fromEntries(ids.map((id) => [id, createRef<HTMLDivElement>()])) as Record<T, RefObject<HTMLDivElement | null>>);
+  return refs;
 }
 
 function Node({ r, active, tone, icon, title, sub, small, offline }: { r: RefObject<HTMLDivElement | null>; active: boolean; tone?: "ok" | "blocked" | "error"; icon: ReactNode; title: string; sub?: string; small?: boolean; offline?: boolean }) {

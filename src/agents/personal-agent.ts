@@ -69,7 +69,7 @@ const groq = () => (client ??= new Groq({ apiKey: groqKey(), timeout: 6000, maxR
 
 // Circuit breaker: after an LLM failure, use scripted responses for a minute so the live demo never waits on repeated timeouts.
 const breaker = globalThis as unknown as { __hnLlmDownUntil?: number };
-const useLlm = () => db().mode !== "scripted" && Boolean(groqKey()) && (db().mode === "live" || Date.now() > (breaker.__hnLlmDownUntil ?? 0));
+const llmEnabled = () => db().mode !== "scripted" && Boolean(groqKey()) && (db().mode === "live" || Date.now() > (breaker.__hnLlmDownUntil ?? 0));
 
 type LlmMsg = Groq.Chat.Completions.ChatCompletionMessageParam;
 
@@ -187,7 +187,7 @@ const who = (text: string) => (/\b(mom|mother|mum)\b/i.test(text) ? "your mom" :
 export async function runTurn(messages: ChatMessage[], lastIntent: string | undefined, emit: Emit) {
   const last = messages[messages.length - 1]?.content ?? "";
   const intent = detectIntent(last, lastIntent);
-  let source: "llm" | "scripted" = useLlm() ? "llm" : "scripted";
+  let source: "llm" | "scripted" = llmEnabled() ? "llm" : "scripted";
   addActivity(["channels", "identity", "personal"]);
   const setSource = (s: "llm" | "scripted") => (source = s);
 
@@ -295,7 +295,7 @@ async function crisisChoice(emit: Emit, messages: ChatMessage[], setSource: (s: 
   let summary = `Family medical emergency abroad; student needs to travel this week and wants to ${preference}.`;
 
   // Real tool call: the LLM must call open_case (forced), we validate its arguments, the pipeline itself is deterministic.
-  if (useLlm()) {
+  if (llmEnabled()) {
     try {
       const msg = await complete(
         [{ role: "system", content: SYSTEM_PROMPT }, ...messages.map((m) => ({ role: m.role, content: m.content }) as LlmMsg)],
@@ -401,7 +401,7 @@ async function finaid(emit: Emit, question: string, setSource: (s: "llm" | "scri
 
   const top = results.slice(0, 3);
   let answer: string | null = null;
-  if (useLlm()) {
+  if (llmEnabled()) {
     try {
       const ctx = top.map((p, i) => `[${i + 1}] ${p.title} (${p.url})\n${p.text.slice(0, 1800)}`).join("\n\n");
       const msg = await complete([
@@ -515,7 +515,7 @@ async function forceAdd(emit: Emit, messages: ChatMessage[], setSource: (s: "llm
 async function general(emit: Emit, messages: ChatMessage[], setSource: (s: "llm" | "scripted") => void) {
   const scripted =
     "I can help you with things that usually take several offices. For example:\n\n- **Tell your story once:** if something's happening in your life, I'll coordinate with your offices and show you your options.\n- **Financial aid questions**, answered from finaid.vt.edu with sources.\n- **Registration backups:** I can act within a plan you've signed, and nothing more.\n\nWhat's going on?";
-  if (!useLlm()) {
+  if (!llmEnabled()) {
     setSource("scripted");
     step(emit, "personal_agent", "Understanding your request", "done", "L0");
     await streamText(emit, scripted);
@@ -584,7 +584,7 @@ async function runTool(name: keyof typeof ARGS, args: Record<string, unknown>, e
 
 /** LLM writes the prose when available; otherwise (or on any failure) the scripted text is used. */
 async function prose(emit: Emit, messages: ChatMessage[], scripted: string, instruction: string, setSource: (s: "llm" | "scripted") => void) {
-  if (useLlm()) {
+  if (llmEnabled()) {
     try {
       const msg = await complete(
         [{ role: "system", content: SYSTEM_PROMPT }, ...messages.map((m) => ({ role: m.role, content: m.content }) as LlmMsg), { role: "system", content: `Instruction for this reply: ${instruction}` }],
