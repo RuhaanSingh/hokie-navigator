@@ -51,7 +51,7 @@ export default function StaffQueue() {
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-[15px] font-medium">{i.title}</div>
                     <div className="truncate text-[13px] text-muted">
-                      Maya Chen · Junior, CS · F-1 · {i.reason}
+                      John Doe · Junior, CS · F-1 · {i.reason}
                     </div>
                   </div>
                   {c?.confidence && <Badge tone={c.confidence.score === "high" ? "ok" : c.confidence.score === "medium" ? "warn" : "bad"}>{c.confidence.score} confidence</Badge>}

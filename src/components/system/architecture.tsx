@@ -98,7 +98,7 @@ export function Architecture({ activity, health }: { activity: Activity[]; healt
         </div>
         <div>
           <div className="mb-1 text-[10.5px] font-semibold uppercase tracking-wider text-muted">Personal agent</div>
-          <Node r={refs.personal} {...nodeState("personal")} icon={<Bot className="h-3.5 w-3.5" />} title="Maya's agent" sub="Works only for her" />
+          <Node r={refs.personal} {...nodeState("personal")} icon={<Bot className="h-3.5 w-3.5" />} title="John's agent" sub="Works only for them" />
         </div>
         <div>
           <div className="mb-1 text-[10.5px] font-semibold uppercase tracking-wider text-muted">Agent gateway</div>

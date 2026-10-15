@@ -11,7 +11,7 @@ type Stage = "form" | "push" | "approved";
 export default function LoginPage() {
   const router = useRouter();
   const [stage, setStage] = useState<Stage>("form");
-  const [pid, setPid] = useState("mchen24");
+  const [pid, setPid] = useState("jdoe24");
 
   useEffect(() => {
     document.title = "Sign in · Hokie Navigator";

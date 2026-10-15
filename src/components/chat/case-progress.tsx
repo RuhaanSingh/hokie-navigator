@@ -58,7 +58,7 @@ export function CaseProgress({ caseId }: { caseId: string }) {
       {done && (
         <div className="border-t border-border bg-[#f7fdf9] px-4 py-3.5">
           <div className="flex items-center gap-2 text-[14px] font-semibold text-success">
-            <CheckCircle2 className="h-4 w-4" /> All set, Maya. You told your story once.
+            <CheckCircle2 className="h-4 w-4" /> All set, John. You told your story once.
           </div>
           {c.selectedOption === "B" ? (
             <ul className="mt-1.5 list-disc space-y-0.5 pl-5 text-[13.5px] text-[#44403c]">

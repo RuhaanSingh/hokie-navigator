@@ -91,7 +91,7 @@ export const gateway = {
   async call(office: OfficeId, action: string, payload: Record<string, unknown> = {}, ctx: CallContext = {}): Promise<GatewayResult> {
     const s = db();
     const started = Date.now();
-    const caller = ctx.caller ?? "Maya's personal agent";
+    const caller = ctx.caller ?? "John's personal agent";
     const stepId = ctx.step?.id ?? uid("s-");
     const agentName = OFFICES[office].agent;
     const emitStep = (status: "running" | "done" | "blocked" | "error", label: string, detail?: string) =>
@@ -162,7 +162,7 @@ export const gateway = {
 
   /** Requests for records that no office tool exposes (e.g. another student's grades) are refused here. */
   refuse(action: string, reason: string, ctx: CallContext) {
-    addAudit({ caller: ctx.caller ?? "Maya's personal agent", office: "gateway", action, decision: "blocked", reason, dataShared: "Nothing", caseId: ctx.caseId, level: ctx.level });
+    addAudit({ caller: ctx.caller ?? "John's personal agent", office: "gateway", action, decision: "blocked", reason, dataShared: "Nothing", caseId: ctx.caseId, level: ctx.level });
     addActivity(["personal", "gateway"], "blocked");
     ctx.emit?.({ type: "step", id: uid("s-"), agent: "gateway", label: "Gateway: blocked (another student's record)", status: "blocked", level: ctx.level, detail: reason });
   },

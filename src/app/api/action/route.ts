@@ -70,7 +70,7 @@ export async function POST(req: Request) {
       case "consent": {
         const c = s.consent.find((x) => x.office === a.office)!;
         c.allowed = a.allowed;
-        addAudit({ caller: "Maya (student)", office: a.office, action: a.allowed ? "consent_granted" : "consent_revoked", decision: "allowed", dataShared: "—" });
+        addAudit({ caller: "John (student)", office: a.office, action: a.allowed ? "consent_granted" : "consent_revoked", decision: "allowed", dataShared: "—" });
         addNotice({ title: a.allowed ? "Consent restored" : "Consent revoked", body: `Your agent ${a.allowed ? "may contact" : "will not contact"} this office.`, tone: a.allowed ? "ok" : "warn" });
         break;
       }
@@ -86,7 +86,7 @@ export async function POST(req: Request) {
       case "plan_status":
         s.plan.status = a.status;
         if (a.status === "signed") s.plan.signedAt = Date.now();
-        addAudit({ caller: "Maya (student)", office: "personal_agent", action: a.status === "signed" ? "sign_plan" : "revoke_plan", decision: "allowed", dataShared: "—", level: "L3" });
+        addAudit({ caller: "John (student)", office: "personal_agent", action: a.status === "signed" ? "sign_plan" : "revoke_plan", decision: "allowed", dataShared: "—", level: "L3" });
         break;
       case "plan_limits":
         s.plan.limits = { maxCredits: a.maxCredits, earliestMinutes: a.earliestMinutes, earliestStart: fmt(a.earliestMinutes) };

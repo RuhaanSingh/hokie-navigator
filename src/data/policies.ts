@@ -6,7 +6,7 @@ export const POLICIES: Policy[] = [
   { id: "REG-1", office: "registrar", text: "Courses dropped by the drop deadline are removed from the transcript.", source: "Registrar Academic Calendar §2 (mock)" },
   { id: "REG-2", office: "registrar", text: "An Incomplete (I) may be recorded when the instructor agrees and remaining work is due by an agreed date next term.", source: "Grading Policy §5.3 (mock)" },
   { id: "REG-3", office: "registrar", text: "A medical withdrawal removes the student from all courses for the term; tuition adjustment depends on the withdrawal date.", source: "Withdrawal Policy §1 (mock)" },
-  { id: "REG-4", office: "registrar", text: "Undergraduates may use up to 3 course withdrawals (W) in their career. Maya has used 0 of 3.", source: "W Grade Policy (mock record)" },
+  { id: "REG-4", office: "registrar", text: "Undergraduates may use up to 3 course withdrawals (W) in their career. John has used 0 of 3.", source: "W Grade Policy (mock record)" },
   // Financial aid / scholarships
   { id: "SCH-2", office: "financial_aid", text: "The merit scholarship requires full-time enrollment (12+ credits) each term.", source: "Merit Scholarship Terms §2 (mock)" },
   { id: "SCH-4", office: "financial_aid", text: "If a student withdraws, the term's scholarship is prorated by withdrawal date; the remainder may be owed to the Bursar.", source: "Merit Scholarship Terms §4 (mock)" },

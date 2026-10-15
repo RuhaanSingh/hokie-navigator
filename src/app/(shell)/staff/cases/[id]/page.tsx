@@ -40,7 +40,7 @@ export default function StaffCase() {
       <div className="mb-5 flex flex-wrap items-center gap-3">
         <h2 className="text-[22px] font-semibold tracking-tight">Case #{c.id}</h2>
         <Badge tone={pending ? "primary" : c.status === "completed" ? "ok" : c.status === "rejected" ? "bad" : "warn"}>{c.status.replace("_", " ")}</Badge>
-        <span className="text-[13px] text-muted">Received {timeAgo(c.updatedAt)} · Maya Chen · Junior, Computer Science · F-1 · shared with student consent</span>
+        <span className="text-[13px] text-muted">Received {timeAgo(c.updatedAt)} · John Doe · Junior, Computer Science · F-1 · shared with student consent</span>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[1fr_340px]">

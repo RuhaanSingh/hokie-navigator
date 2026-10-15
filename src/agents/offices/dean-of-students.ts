@@ -26,7 +26,7 @@ export const deanOfStudents: OfficeHandler = (action, payload) => {
       const courses = (payload.courses as string[]) ?? [];
       const drafts = courses.map(
         (c) =>
-          `To: ${c} instructor\nSubject: Student support notice — Maya Chen\n\nThe Dean of Students office is supporting Maya through a family emergency and has approved an Incomplete request for ${c}. Please reply to confirm an agreed completion date (proposed: week 6 of next term). No further details are shared.\n\n— Dean of Students (sent via Hokie Navigator, simulated)`,
+          `To: ${c} instructor\nSubject: Student support notice — John Doe\n\nThe Dean of Students office is supporting John through a family emergency and has approved an Incomplete request for ${c}. Please reply to confirm an agreed completion date (proposed: week 6 of next term). No further details are shared.\n\n— Dean of Students (sent via Hokie Navigator, simulated)`,
       );
       return { ...base, summary: `Instructor notices sent for ${courses.join(" and ")}`, data: { drafts }, ruleIds: ["DOS-1"] };
     }

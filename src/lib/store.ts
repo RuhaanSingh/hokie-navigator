@@ -81,7 +81,7 @@ function fresh(): State {
       {
         id: uid("a-"),
         ts: now - 2 * DAY,
-        caller: "Maya's personal agent",
+        caller: "John's personal agent",
         office: "registrar",
         action: "get_student_overview",
         decision: "allowed",
@@ -91,7 +91,7 @@ function fresh(): State {
       {
         id: uid("a-"),
         ts: now - 3 * DAY,
-        caller: "Maya (student)",
+        caller: "John (student)",
         office: "personal_agent",
         action: "sign_plan",
         decision: "allowed",

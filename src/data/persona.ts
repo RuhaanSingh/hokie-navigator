@@ -1,9 +1,9 @@
 // Fictional demo persona. No real student data anywhere in this prototype.
 export const persona = {
-  id: "stu-maya-chen",
-  name: "Maya Chen",
-  firstName: "Maya",
-  pid: "mchen24 (simulated)",
+  id: "stu-john-doe",
+  name: "John Doe",
+  firstName: "John",
+  pid: "jdoe24 (simulated)",
   year: "Junior",
   major: "Computer Science",
   visa: "F-1 international student",

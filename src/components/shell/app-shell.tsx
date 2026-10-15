@@ -188,9 +188,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <SlidersHorizontal className="h-4 w-4" />
               </button>
               <Link href="/login" title="Simulated sign-in screen" className="flex items-center gap-2.5 border-l border-border pl-3">
-                <div className={cn("flex h-8 w-8 items-center justify-center rounded-full text-[12px] font-semibold", role === "staff" ? "bg-[#f5f5f4] text-[#44403c]" : "bg-primary-tint text-primary")}>{role === "staff" ? "DS" : role === "system" ? "OP" : "MC"}</div>
+                <div className={cn("flex h-8 w-8 items-center justify-center rounded-full text-[12px] font-semibold", role === "staff" ? "bg-[#f5f5f4] text-[#44403c]" : "bg-primary-tint text-primary")}>{role === "staff" ? "DS" : role === "system" ? "OP" : "JD"}</div>
                 <div className="hidden leading-tight lg:block">
-                  <div className="text-[13px] font-medium text-text">{role === "staff" ? "Case manager" : role === "system" ? "Platform operator" : "Maya Chen"}</div>
+                  <div className="text-[13px] font-medium text-text">{role === "staff" ? "Case manager" : role === "system" ? "Platform operator" : "John Doe"}</div>
                   <div className="text-[11.5px] text-muted">{role === "staff" ? "Dean of Students · simulated" : role === "system" ? "Monitoring · simulated" : "Junior · CS · simulated sign-in"}</div>
                 </div>
               </Link>
