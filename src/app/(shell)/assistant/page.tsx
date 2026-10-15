@@ -6,6 +6,7 @@ import { useChat } from "@/components/chat/chat-provider";
 import { useStore } from "@/components/shell/store-provider";
 import { Message } from "@/components/chat/message";
 import { PromptBox } from "@/components/chat/prompt-box";
+import { DemoPrompts } from "@/components/chat/demo-prompts";
 import { LogoMark } from "@/components/shell/logo";
 import { DEAN_PROMPT, HERO_PROMPT } from "@/lib/demo-prompts";
 
@@ -85,6 +86,9 @@ function AssistantInner() {
       </div>
       <div className="shrink-0 border-t border-border bg-white/95 backdrop-blur">
         <div className="mx-auto w-full max-w-[880px] px-4 py-3 md:px-6">
+          <div className="mb-2 flex items-center gap-2">
+            <DemoPrompts onSend={send} busy={busy} />
+          </div>
           <PromptBox onSend={send} busy={busy} autoFocus />
           <div className="mt-1.5 flex items-center justify-between text-[11.5px] text-[#a8a29e]">
             <span>The AI coordinates; people decide. Not for emergencies: call 911 or 988.</span>

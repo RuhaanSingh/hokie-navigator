@@ -32,6 +32,8 @@ Press **⌘/Ctrl + Shift + D** on any page, or open **System → Demo controls**
 
 Use two windows: **Student** (`/assistant`) and **Staff** (`/staff`). Keep a third tab on `/system` if you want the diagram to light up.
 
+**Shortcut:** on the Navigator page, the **Demo prompts** button above the message box lists every prompt below, grouped by scenario. One click sends it.
+
 1. **Scenario A, Tell Your Story Once (hero, under 90 s).** Navigator → *Tell your story*.
    - The agent responds with empathy and shows Dean of Students and Cook Counseling contacts. It asks one question. Tap **Stay enrolled if I can**.
    - Case #NAV-2041 opens. The gateway checks consent, and 5 office agents run in parallel.

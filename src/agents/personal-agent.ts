@@ -36,7 +36,7 @@ export const CRISIS_CHIPS = ["Stay enrolled if I can", "Step away this semester"
 // ---------- Intent detection (deterministic; also powers Scripted mode) ----------
 
 const RX = {
-  selfHarm: /(suicid|kill myself|end (it|my life)|self[- ]?harm|hurt(ing)? myself|want to die|don'?t want to (live|be here)|no reason to live)/i,
+  selfHarm: /(suicid|kill myself|\bend (it all|my life|things)\b|self[- ]?harm|\bhurt(ing)? myself|want to die|don'?t want to (live|be here)|no reason to live)/i,
   medical: /(medication|meds\b|dosage|dose\b|prescri|diagnos|antidepress|should i (take|stop) (my|taking))/i,
   otherStudent: /((roommate|friend|classmate|girlfriend|boyfriend|someone else|another student|other student)'?s?\b.*\b(grade|record|transcript|schedule|gpa|info|aid|account))|((grade|record|transcript|gpa)s?\b.*\b(roommate|friend|classmate|another student))/i,
   crisis: /(hospital|emergency|passed away|died|funeral|surgery|accident|critically|icu\b|fly (out|home)|flying home|go(ing)? home|family (crisis|emergency)|sick)/i,
