@@ -9,7 +9,7 @@ export interface UiMessage {
   steps: TraceStep[];
   sources?: { title: string; url: string }[];
   confidence?: Confidence;
-  options?: { caseId: string; options: OptionCard[]; confidence: Confidence; notes: string[] };
+  options?: { caseId: string; options: OptionCard[]; confidence: Confidence; notes: string[]; autoSubmitted?: OptionCard["id"] };
   approval?: { caseId: string; action: string; approver: "student" | "staff" };
   wellbeing?: { urgent: boolean; resources: WellbeingResource[] };
   quickReplies?: string[];
@@ -84,7 +84,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
           case "confidence":
             return { ...m, confidence: { score: e.score, checks: e.checks } };
           case "options":
-            return { ...m, options: { caseId: e.caseId, options: e.options, confidence: e.confidence, notes: e.notes } };
+            return { ...m, options: { caseId: e.caseId, options: e.options, confidence: e.confidence, notes: e.notes, autoSubmitted: e.autoSubmitted } };
           case "approval_request":
             return { ...m, approval: { caseId: e.caseId, action: e.action, approver: e.approver } };
           case "wellbeing":

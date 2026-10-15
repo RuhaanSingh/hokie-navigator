@@ -26,7 +26,7 @@ export interface CaseResult {
 }
 
 /** Scenario A: open a case and fan out to five office agents in parallel through the gateway. */
-export async function openCase(input: { summary: string; situation: string; preference: string; narrative: string }, emit: Emit): Promise<CaseResult> {
+export async function openCase(input: { summary: string; situation: string; preference: string; narrative: string; autoSelect?: OptionCard["id"] }, emit: Emit): Promise<CaseResult> {
   const s = db();
   const caseId = nextCaseId();
   s.stats.workflows++;
@@ -121,8 +121,18 @@ export async function openCase(input: { summary: string; situation: string; pref
   rec.status = "awaiting_student";
   saveCase(rec);
 
+  // The student already told us which option they want and asked for it to go forward: send it for staff approval now.
+  if (input.autoSelect) {
+    const opt = ev.options.find((o) => o.id === input.autoSelect)!;
+    const sid = step(emit, "personal_agent", `You asked for Option ${opt.id} (${opt.title}): preparing your case file…`, "running", "L2");
+    await sleep(500);
+    submitForApproval(caseId, input.autoSelect);
+    step(emit, "personal_agent", `Option ${opt.id} sent to Dean of Students for approval`, "done", "L2", "Your request counts as your confirmation. Nothing executes until staff approve.", sid);
+    step(emit, "approvals", "Waiting on Dean of Students: always-staff-approved action", "blocked", undefined, getCase(caseId)?.stopReason);
+  }
+
   emit({ type: "confidence", score: ev.confidence.score, checks: ev.confidence.checks });
-  emit({ type: "options", caseId, options: ev.options, confidence: ev.confidence, notes: ev.notes });
+  emit({ type: "options", caseId, options: ev.options, confidence: ev.confidence, notes: ev.notes, autoSubmitted: input.autoSelect });
   emit({ type: "case_update", caseId });
 
   const fewest = ev.options.find((o) => o.fewestConsequences)!;

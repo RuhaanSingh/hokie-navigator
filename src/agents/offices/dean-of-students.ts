@@ -1,5 +1,6 @@
 import "server-only";
 import { deanRecord as rec } from "@/data/offices/dean-of-students";
+import { kbReply } from "./kb";
 import type { OfficeHandler } from "./types";
 
 // Simulated Dean of Students agent. This is the only office that receives the student's own words (with consent),
@@ -32,6 +33,8 @@ export const deanOfStudents: OfficeHandler = (action, payload) => {
     }
     case "answer_question":
       return { ...base, summary: "The Dean of Students supports students through family and medical emergencies and can notify instructors.", ruleIds: ["DOS-1"] };
+    case "kb_search":
+      return kbReply("dean_of_students", String(payload.query ?? ""));
     default:
       throw new Error(`Dean of Students agent: unknown action ${action}`);
   }

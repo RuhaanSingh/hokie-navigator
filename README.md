@@ -2,7 +2,7 @@
 
 *Tell your story once. The AI coordinates; people decide.*
 
-This is a working prototype for the PwC × PSE Hokie Navigator case competition. It covers a student's personal agent, an agent gateway, seven simulated office agents, staff approval, a consent ledger, confidence scoring, and a full audit log. Financial Aid answers informational (L0) questions from a real snapshot of **finaid.vt.edu**. Everything else uses deterministic mock data for a fictional student, **John Doe**.
+This is a working prototype for the PwC × PSE Hokie Navigator case competition. It covers a student's personal agent, an agent gateway, seven simulated office agents, staff approval, a consent ledger, confidence scoring, and a full audit log. Six office agents answer informational (L0) questions from real snapshots of their official sites: **Financial Aid** (finaid.vt.edu), **Registrar**, **Bursar**, **Housing**, **Dean of Students**, and **International Student Services** (international.vt.edu). Everything else uses deterministic mock data for a fictional student, **John Doe**.
 
 ## Run it (presenting laptop)
 
@@ -39,7 +39,18 @@ Use two windows: **Student** (`/assistant`) and **Staff** (`/staff`). Keep a thi
    - Pick **B**, then **Send to Dean of Students for approval**.
    - In the staff window, the packet appears with a red dot. It shows the goal, options, office responses, conflicts, the 4 confidence checks, and why the agent stopped. Click **Approve**.
    - Back in the student window, execution runs step by step, each step with a level pill. You can view the drafted instructor notices. It ends with a "close the loop" summary and an audit trail link.
-2. **Scenario B, real Financial Aid data.** Ask *"What is SAP and how do I appeal?"*. You get source chips to finaid.vt.edu and a High confidence chip. Then ask *"Can I get a refund on my parking permit?"*. Confidence is Low, the agent refuses to guess, and it offers to route the question to a counselor.
+1b. **One-prompt Dean case (fastest way to show staff approval).** Navigator → *Request an incomplete* (or type the prompt below). The agent shows human-support contacts, checks 5 offices in parallel, and sends Option B straight to the Dean of Students queue in one turn (about 4 s). Open `/staff` in the second window and approve.
+   > My dad is having emergency surgery overseas and I need to fly home for two weeks. I'd like to take Incompletes in CS 3214 and STAT 4705 instead of dropping them. Can you send that to the Dean of Students for approval?
+
+   Variants: name a *medical withdrawal* (Option C) or *dropping two courses* (Option A, which shows its 2 rule conflicts in the packet).
+2. **Scenario B, real office data.** Each question is routed to the office that owns it, answered only from that office's site, with source chips:
+   - ISS: *"How many hours can I work on campus as an F-1 student?"* or *"What's happening with duration of status?"*
+   - Bursar: *"When is spring tuition due?"*
+   - Registrar: *"How do I request my transcript?"* or *"When are final grades available?"*
+   - Housing: *"How do I get out of my housing contract?"*
+   - Dean of Students: *"What is the student emergency fund?"*
+
+   Financial Aid: Ask *"What is SAP and how do I appeal?"*. You get source chips to finaid.vt.edu and a High confidence chip. Then ask *"Can I get a refund on my parking permit?"*. It routes to the Bursar, confidence is Low, the agent refuses to guess, and it offers to route the question to a Bursar staff member (it shows up under Staff → Other offices).
 3. **Scenario C, outage.** Demo controls → Financial Aid **offline**, then re-run A. You'll see `Financial Aid agent: unavailable · health check failed`, scholarship shown as *Pending human review*, Medium confidence, "Nothing irreversible executed", the case routed to the counselor queue, and the Dean of Students asked to protect Friday's deadline. The System page shows the office as Down.
 4. **Scenario D, pre-approved plan (L3).** Open Plans, then Demo controls → **Fill** CS 3214-1. Within about 2 s the watchdog enrolls John in CS 3214-2 automatically and shows a toast. Reset, then use **Fill CS 3214-1 · variant: Plan B breaks a limit**. The agent **stops and asks** instead of acting.
 5. **Scenario E, refusals and wellbeing.**
@@ -60,7 +71,7 @@ src/agents/
   confidence.ts          High / Medium / Low from 4 checks
   watchdog.ts            seat and hold monitoring; L3 only inside a signed plan
   offices/*.ts           7 simulated office agents (deterministic)
-  kb/                    finaid.vt.edu snapshot (markdown + BM25 index)
+  kb/                    per-office site snapshots (markdown + BM25 index) and keyword/retrieval routing
 src/lib/store.ts         in-memory store shared by all windows
 src/data/                fictional persona, office records, mock policies
 ```
@@ -77,7 +88,8 @@ The autonomy ladder is enforced in code and shown on every action:
 
 ## Data and accuracy
 
-- `scripts/scrape-finaid.ts` was run once (Oct 2026). Its output, 33 pages, is committed in `src/agents/kb/finaid/`, and nothing hits the network at runtime. `seed.md` holds the verified fallback facts.
+- `scripts/scrape-finaid.ts` and `scripts/scrape-offices.ts` were run once (Oct 2026). Their output (33 Financial Aid pages plus 44 pages from the Registrar, Bursar, Housing, Dean of Students, and ISS) is committed in `src/agents/kb/<office>/`, and nothing hits the network at runtime. `finaid/seed.md` holds the verified fallback facts.
+- In scripted/offline mode, the main demo questions use canned answers whose every sentence comes from those pages. Other questions quote the most relevant sentences directly.
 - Cook Counseling Center (540-231-6557) and Dean of Students (540-231-3787) contacts were checked against ucc.vt.edu and dos.vt.edu.
 - All student records, dollar amounts for the persona, policies marked "(mock)", and deadlines are fictional. Office agents are simulated, and the UI says so.
 - There are no VT logos. The wordmark and compass glyph are original.

@@ -66,7 +66,7 @@ export function Message({ m, onQuickReply }: { m: UiMessage; onQuickReply: (t: s
               <a key={s.url} href={s.url} target="_blank" rel="noreferrer" className="inline-flex max-w-[280px] items-center gap-1.5 rounded-full border border-border bg-white px-2.5 py-1 text-[12.5px] text-[#44403c] hover:border-[#d6d3d1] hover:bg-surface">
                 <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-[4px] bg-primary-tint text-[10.5px] font-bold text-primary">{i + 1}</span>
                 <span className="truncate">{s.title}</span>
-                <span className="shrink-0 text-muted">finaid.vt.edu</span>
+                <span className="shrink-0 text-muted">{new URL(s.url).hostname.replace(/^www\./, "")}</span>
                 <ExternalLink className="h-3 w-3 shrink-0 text-muted" />
               </a>
             ))}

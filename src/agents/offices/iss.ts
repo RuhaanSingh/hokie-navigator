@@ -1,5 +1,6 @@
 import "server-only";
 import { issRecord as rec } from "@/data/offices/iss";
+import { kbReply } from "./kb";
 import type { EnrollmentChangeRequest, OfficeHandler } from "./types";
 
 // Simulated International Student Services agent.
@@ -36,6 +37,8 @@ export const iss: OfficeHandler = (action, payload) => {
       return { ...base, summary: "ISS notified before departure; an advisor will confirm your record and travel guidance.", ruleIds: ["ISS-5"] };
     case "answer_question":
       return { ...base, summary: "F-1 students must stay full-time unless ISS authorizes a Reduced Course Load in advance (mock).", ruleIds: ["ISS-1", "ISS-3"] };
+    case "kb_search":
+      return kbReply("iss", String(payload.query ?? ""));
     default:
       throw new Error(`ISS agent: unknown action ${action}`);
   }

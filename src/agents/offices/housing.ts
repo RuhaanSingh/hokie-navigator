@@ -1,9 +1,10 @@
 import "server-only";
 import { housingRecord as rec } from "@/data/offices/housing";
+import { kbReply } from "./kb";
 import type { OfficeHandler } from "./types";
 
 // Simulated Housing & Residence Life agent.
-export const housing: OfficeHandler = (action) => {
+export const housing: OfficeHandler = (action, payload) => {
   const base = { office: "housing" as const, freshness: rec.freshness };
   switch (action) {
     case "assess_enrollment_change":
@@ -25,6 +26,8 @@ export const housing: OfficeHandler = (action) => {
       return { ...base, summary: "Contract release started effective your withdrawal date.", ruleIds: ["HOU-7"] };
     case "answer_question":
       return { ...base, summary: "Residence hall contracts require full-time enrollment; changes below 12 credits trigger a review (mock).", ruleIds: ["HOU-4"] };
+    case "kb_search":
+      return kbReply("housing", String(payload.query ?? ""));
     default:
       throw new Error(`Housing agent: unknown action ${action}`);
   }

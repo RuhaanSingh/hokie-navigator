@@ -76,7 +76,7 @@ export type TraceEvent =
   | { type: "token"; text: string }
   | { type: "sources"; items: { title: string; url: string }[] }
   | { type: "confidence"; score: ConfidenceScore; checks: ConfidenceCheck[] }
-  | { type: "options"; caseId: string; options: OptionCard[]; confidence: Confidence; notes: string[] }
+  | { type: "options"; caseId: string; options: OptionCard[]; confidence: Confidence; notes: string[]; autoSubmitted?: OptionCard["id"] }
   | { type: "approval_request"; caseId: string; action: string; approver: "student" | "staff" }
   | { type: "case_update"; caseId: string }
   | { type: "wellbeing"; urgent: boolean; resources: WellbeingResource[] }
@@ -212,7 +212,7 @@ export interface OfficeHealth {
 export interface StaffItem {
   id: string;
   caseId?: string;
-  queue: "dean_of_students" | "financial_aid_counselor";
+  queue: "dean_of_students" | "financial_aid_counselor" | "office_staff";
   title: string;
   reason: string;
   ts: number;

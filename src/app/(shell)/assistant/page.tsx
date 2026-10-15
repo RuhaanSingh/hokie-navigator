@@ -1,24 +1,26 @@
 "use client";
 import { Suspense, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { BookOpenText, HeartHandshake, ListChecks, Trash2 } from "lucide-react";
+import { BookOpenText, HeartHandshake, ListChecks, Stamp, Trash2 } from "lucide-react";
 import { useChat } from "@/components/chat/chat-provider";
 import { useStore } from "@/components/shell/store-provider";
 import { Message } from "@/components/chat/message";
 import { PromptBox } from "@/components/chat/prompt-box";
 import { LogoMark } from "@/components/shell/logo";
-import { HERO_PROMPT } from "@/lib/demo-prompts";
+import { DEAN_PROMPT, HERO_PROMPT } from "@/lib/demo-prompts";
 
 
 const STARTERS = [
   { icon: HeartHandshake, title: "Tell your story", body: "Something happening in your life? Say it once; I'll coordinate the offices.", prompt: HERO_PROMPT },
-  { icon: BookOpenText, title: "Ask about financial aid", body: "Answers from finaid.vt.edu, with sources.", prompt: "What happens to my financial aid if I withdraw from the semester?" },
+  { icon: Stamp, title: "Request an incomplete", body: "Say what you need once; it goes to the Dean of Students for approval.", prompt: DEAN_PROMPT },
+  { icon: BookOpenText, title: "Ask any office", body: "Financial Aid, Registrar, Bursar, Housing, Dean of Students, ISS, with sources.", prompt: "How many hours can I work on campus as an F-1 student?" },
   { icon: ListChecks, title: "Plan registration backups", body: "I act only within a plan you've signed.", prompt: "How do my registration backups for CS 3214 work?" },
 ];
 
 const QUERY_PROMPTS: Record<string, string> = {
   hold: "Help me resolve the Bursar hold on my account.",
   story: HERO_PROMPT,
+  dean: DEAN_PROMPT,
   aid: "What happens to my financial aid if I withdraw from the semester?",
   plan: "How do my registration backups for CS 3214 work?",
 };
@@ -61,7 +63,7 @@ function AssistantInner() {
               <LogoMark className="h-10 w-10" />
               <h2 className="mt-4 text-[26px] font-semibold tracking-tight">Tell your story once.</h2>
               <p className="mt-1 max-w-xl text-[15px] text-muted">I&apos;m your personal agent. I talk to office agents for you, show you your options, and never act on anything sensitive without a person approving it.</p>
-              <div className="mt-8 grid gap-3 sm:grid-cols-3">
+              <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {STARTERS.map((s) => (
                   <button key={s.title} onClick={() => send(s.prompt)} className="group rounded-[12px] border border-border bg-white p-4 text-left transition-colors hover:border-[#f6cdd5] hover:bg-primary-tint/40">
                     <s.icon className="h-5 w-5 text-primary" />

@@ -1,5 +1,6 @@
 import "server-only";
 import { registrarRecord as rec } from "@/data/offices/registrar";
+import { kbReply } from "./kb";
 import type { EnrollmentChangeRequest, OfficeHandler } from "./types";
 
 // Simulated Registrar agent: sole holder of access to the (mock) registration system.
@@ -37,6 +38,8 @@ export const registrar: OfficeHandler = (action, payload) => {
       return { ...base, summary: "Medical withdrawal recorded for the term; withdrawal date stamped today", ruleIds: ["REG-3"] };
     case "answer_question":
       return { ...base, summary: `Key dates: ${rec.deadlines.map((d) => `${d.label} — ${d.when}`).join("; ")}.`, ruleIds: ["REG-1", "REG-4"] };
+    case "kb_search":
+      return kbReply("registrar", String(payload.query ?? ""));
     default:
       throw new Error(`Registrar agent: unknown action ${action}`);
   }

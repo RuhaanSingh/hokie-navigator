@@ -10,6 +10,7 @@ import { cn, timeAgo } from "@/lib/utils";
 const QUEUES = [
   { id: "dean_of_students", label: "Dean of Students" },
   { id: "financial_aid_counselor", label: "Financial aid counselors" },
+  { id: "office_staff", label: "Other offices" },
 ] as const;
 
 export default function StaffQueue() {

@@ -58,17 +58,17 @@ function Cell({ value, tone, ruleIds }: { value: string; tone: Tone; ruleIds: st
 }
 
 /** Option Comparison: one column per option, rows per consequence, every cell cites its rule. The agent does not choose. */
-export function OptionComparison({ caseId, options, confidence, notes, readOnly, highlight }: { caseId: string; options: OptionCard[]; confidence: Confidence; notes: string[]; readOnly?: boolean; highlight?: OptionCard["id"] }) {
+export function OptionComparison({ caseId, options, confidence, notes, readOnly, highlight, autoSubmitted }: { caseId: string; options: OptionCard[]; confidence: Confidence; notes: string[]; readOnly?: boolean; highlight?: OptionCard["id"]; autoSubmitted?: OptionCard["id"] }) {
   const { snap, act } = useStore();
   const live = snap?.cases.find((c) => c.id === caseId);
-  const submitted = readOnly || (live && live.status !== "awaiting_student" && live.status !== "gathering");
+  const submitted = readOnly || Boolean(autoSubmitted) || (live && live.status !== "awaiting_student" && live.status !== "gathering");
   const fewest = options.find((o) => o.fewestConsequences);
   const [picked, setPicked] = useState<OptionCard["id"] | null>(null);
   const [sending, setSending] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const collapsed = !readOnly && submitted && !expanded;
   const rows = options[0].rows.map((r) => ({ key: r.key, label: r.label }));
-  const chosen = highlight ?? live?.selectedOption ?? picked;
+  const chosen = highlight ?? live?.selectedOption ?? autoSubmitted ?? picked;
 
   return (
     <div className="space-y-3">

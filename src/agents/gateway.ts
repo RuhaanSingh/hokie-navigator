@@ -26,12 +26,12 @@ const HANDLERS: Record<OfficeId, OfficeHandler> = {
 
 /** Each office's approved tools. Anything else is refused before the office is contacted. */
 export const ALLOW_LIST: Record<OfficeId, string[]> = {
-  registrar: ["get_student_overview", "get_deadlines", "assess_enrollment_change", "record_incomplete", "record_drop", "record_withdrawal", "answer_question"],
+  registrar: ["kb_search", "get_student_overview", "get_deadlines", "assess_enrollment_change", "record_incomplete", "record_drop", "record_withdrawal", "answer_question"],
   financial_aid: ["kb_search", "assess_enrollment_change", "confirm_aid_status", "check_disbursement", "answer_question"],
-  housing: ["assess_enrollment_change", "confirm_housing", "contract_review", "contract_release", "answer_question"],
-  iss: ["assess_enrollment_change", "confirm_status", "request_rcl", "notify_departure", "answer_question"],
-  dean_of_students: ["assess_enrollment_change", "receive_case", "protect_deadline", "notify_instructors", "answer_question"],
-  bursar: ["get_holds", "assess_hold", "request_hold_review", "answer_question"],
+  housing: ["kb_search", "assess_enrollment_change", "confirm_housing", "contract_review", "contract_release", "answer_question"],
+  iss: ["kb_search", "assess_enrollment_change", "confirm_status", "request_rcl", "notify_departure", "answer_question"],
+  dean_of_students: ["kb_search", "assess_enrollment_change", "receive_case", "protect_deadline", "notify_instructors", "answer_question"],
+  bursar: ["kb_search", "get_holds", "assess_hold", "request_hold_review", "answer_question"],
   department: ["list_sections", "check_section", "enroll_section", "answer_question"],
 };
 
