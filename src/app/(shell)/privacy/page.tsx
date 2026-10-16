@@ -11,7 +11,7 @@ import { cn, timeAgo } from "@/lib/utils";
 export default function PrivacyPage() {
   const { snap, act } = useStore();
   if (!snap) return <div className="p-8 text-muted">Loading…</div>;
-  const mine = snap.audit.filter((a) => a.caller.includes("John") || a.office !== "staff");
+  const mine = snap.audit.filter((a) => a.caller.includes("Ruhaan") || a.office !== "staff");
 
   return (
     <div className="mx-auto max-w-[1180px] px-4 py-6 md:px-8">

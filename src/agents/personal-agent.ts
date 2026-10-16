@@ -175,10 +175,10 @@ const TOOLS: Groq.Chat.Completions.ChatCompletionTool[] = [
       },
     },
   },
-  { type: "function", function: { name: "get_student_overview", description: "Get John's courses, credits, deadlines and alerts (via Registrar).", parameters: { type: "object", properties: {} } } },
+  { type: "function", function: { name: "get_student_overview", description: "Get Ruhaan's courses, credits, deadlines and alerts (via Registrar).", parameters: { type: "object", properties: {} } } },
   {
     type: "function",
-    function: { name: "check_plan", description: "Read John's signed pre-approved registration plan.", parameters: { type: "object", properties: { course: { type: "string" } }, required: [] } },
+    function: { name: "check_plan", description: "Read Ruhaan's signed pre-approved registration plan.", parameters: { type: "object", properties: { course: { type: "string" } }, required: [] } },
   },
   {
     type: "function",
@@ -285,10 +285,10 @@ export async function runTurn(messages: ChatMessage[], lastIntent: string | unde
 async function selfHarm(emit: Emit) {
   step(emit, "safety", "Safety check: pausing all automation", "done", undefined, "No tools, no case, nothing shared with offices");
   wellbeing(emit, "self_harm");
-  addAudit({ caller: "John's personal agent", office: "personal_agent", action: "safety_response", decision: "allowed", dataShared: "Nothing shared with any office", level: "L0" });
+  addAudit({ caller: "Ruhaan's personal agent", office: "personal_agent", action: "safety_response", decision: "allowed", dataShared: "Nothing shared with any office", level: "L0" });
   await streamText(
     emit,
-    "I'm really glad you told me, John. You don't have to go through this alone, and you deserve support from a person right now.\n\n**Please call or text 988** (Suicide & Crisis Lifeline), any time, day or night. Cook Counseling Center is here for you too, and the Dean of Students can help with anything school-related so you don't have to think about it.\n\nIf you're in immediate danger, call 911. I'm here, and I'm not going to do anything with your classes or offices unless you ask.",
+    "I'm really glad you told me, Ruhaan. You don't have to go through this alone, and you deserve support from a person right now.\n\n**Please call or text 988** (Suicide & Crisis Lifeline), any time, day or night. Cook Counseling Center is here for you too, and the Dean of Students can help with anything school-related so you don't have to think about it.\n\nIf you're in immediate danger, call 911. I'm here, and I'm not going to do anything with your classes or offices unless you ask.",
   );
 }
 
@@ -297,7 +297,7 @@ async function medical(emit: Emit, messages: ChatMessage[], setSource: (s: "llm"
   wellbeing(emit, "medical");
   const scripted =
     "I can't give medical advice, and I'd never want to guess about something this important. Please don't change or stop a medication without talking to the clinician who prescribed it.\n\nSchiffert Health Center can help with medical questions, and if this is weighing on you, Cook Counseling Center is there to talk. I've added both below.";
-  await prose(emit, messages, scripted, "John asked a medical question. Decline to give medical advice in 2–3 warm sentences, tell them not to change medication without her prescriber, and point to Schiffert Health Center and Cook Counseling Center (cards are shown below; no phone numbers).", setSource);
+  await prose(emit, messages, scripted, "Ruhaan asked a medical question. Decline to give medical advice in 2–3 warm sentences, tell them not to change medication without their prescriber, and point to Schiffert Health Center and Cook Counseling Center (cards are shown below; no phone numbers).", setSource);
 }
 
 async function otherStudent(emit: Emit, messages: ChatMessage[], setSource: (s: "llm" | "scripted") => void) {
@@ -307,7 +307,7 @@ async function otherStudent(emit: Emit, messages: ChatMessage[], setSource: (s: 
   step(emit, "audit", "Audit entry logged", "done");
   const scripted =
     "I can't do that. I can only access your own records, never another student's, even a roommate's. The gateway blocked that request and logged it.\n\nIf you're worried about your roommate, I'm happy to point you to resources you could share with them.";
-  await prose(emit, messages, scripted, "John asked for another student's information. Refuse in 2 short sentences (you only access their own records; the request was blocked and logged), then offer to share resources she could pass along.", setSource);
+  await prose(emit, messages, scripted, "Ruhaan asked for another student's information. Refuse in 2 short sentences (you only access their own records; the request was blocked and logged), then offer to share resources they could pass along.", setSource);
 }
 
 // ---------- Scenario A: Tell Your Story Once ----------
@@ -320,12 +320,12 @@ async function crisisIntake(emit: Emit, messages: ChatMessage[], setSource: (s: 
   await sleep(300);
   step(emit, "safety", "Wellbeing check: surfacing human support", "done", undefined, "Dean of Students · Cook Counseling Center");
   wellbeing(emit, "crisis");
-  const scripted = `I'm so sorry about ${who(text)}, John. That's a lot to carry, and you don't have to sort it all out alone. Real people can help right now: the **Dean of Students** supports students through family emergencies, and **Cook Counseling Center** is there if you want to talk to someone. Their contacts are below.\n\nI can coordinate with your offices so you only have to tell this story once. One question first: **do you want to stay enrolled this semester if possible, or step away entirely?**`;
+  const scripted = `I'm so sorry about ${who(text)}, Ruhaan. That's a lot to carry, and you don't have to sort it all out alone. Real people can help right now: the **Dean of Students** supports students through family emergencies, and **Cook Counseling Center** is there if you want to talk to someone. Their contacts are below.\n\nI can coordinate with your offices so you only have to tell this story once. One question first: **do you want to stay enrolled this semester if possible, or step away entirely?**`;
   await prose(
     emit,
     messages,
     scripted,
-    `John just shared a family emergency. Respond warmly in 2 short paragraphs: (1) empathy plus a mention that the Dean of Students and Cook Counseling Center are there for them (cards shown below, no numbers); (2) say you can coordinate with her offices so she only tells her story once, then ask exactly this one question in bold: "Do you want to stay enrolled this semester if possible, or step away entirely?" Do not offer options yet.`,
+    `Ruhaan just shared a family emergency. Respond warmly in 2 short paragraphs: (1) empathy plus a mention that the Dean of Students and Cook Counseling Center are there for them (cards shown below, no numbers); (2) say you can coordinate with their offices so they only tell their story once, then ask exactly this one question in bold: "Do you want to stay enrolled this semester if possible, or step away entirely?" Do not offer options yet.`,
     setSource,
   );
   emit({ type: "quick_replies", items: CRISIS_CHIPS });
@@ -355,7 +355,7 @@ async function crisisChoice(emit: Emit, messages: ChatMessage[], setSource: (s: 
   }
 
   const result = await openCase({ summary, situation: "family_emergency", preference, narrative: story }, emit);
-  await prose(emit, messages, scriptedCaseProse(result, preference), `${result.summaryForLlm}\n\nJohn's preference: ${preference}.\nWrite 2–3 short paragraphs: say you checked with five offices at once so she didn't have to; say which option has the fewest consequences and why (one sentence); name any conflict plainly without picking a side; mention anything pending or unknown; end by saying the decision is hers plus Dean of Students approval and she can pick an option below.`, setSource);
+  await prose(emit, messages, scriptedCaseProse(result, preference), `${result.summaryForLlm}\n\nRuhaan's preference: ${preference}.\nWrite 2–3 short paragraphs: say you checked with five offices at once so they didn't have to; say which option has the fewest consequences and why (one sentence); name any conflict plainly without picking a side; mention anything pending or unknown; end by saying the decision is theirs plus Dean of Students approval and they can pick an option below.`, setSource);
   emit({ type: "approval_request", caseId: result.caseId, action: "Send to Dean of Students for approval", approver: "staff" });
 }
 
@@ -384,7 +384,7 @@ async function deanRequest(emit: Emit, messages: ChatMessage[], setSource: (s: "
   );
   const picked = result.options.find((o) => o.id === option)!;
   const parts = [
-    `${emergency ? `I'm sorry about ${who(text)}, John. ` : ""}I've handled the coordination so you can focus on ${emergency ? "getting home" : "what matters"}.`,
+    `${emergency ? `I'm sorry about ${who(text)}, Ruhaan. ` : ""}I've handled the coordination so you can focus on ${emergency ? "getting home" : "what matters"}.`,
     `I checked with five offices at once and sent your request for **${picked.title} (Option ${option})** to the **Dean of Students** with your case file, so you won't have to explain it again.${option === "B" ? " Incompletes keep you full-time, so your scholarship, housing and F-1 status aren't affected." : ""}`,
   ];
   if (picked.conflicts > 0) parts.push(`Heads up: this option **breaks ${picked.conflicts} office rule${picked.conflicts > 1 ? "s" : ""}** (${picked.conflictRules.join(", ")}). I didn't pick a side; the Dean will see the conflict and decide.`);
@@ -394,7 +394,7 @@ async function deanRequest(emit: Emit, messages: ChatMessage[], setSource: (s: "
     emit,
     messages,
     parts.join("\n\n"),
-    `${result.summaryForLlm}\n\nJohn explicitly asked for Option ${option} (${picked.title}) and it has ALREADY been sent to the Dean of Students for approval. Write 2 short paragraphs: ${emergency ? "brief empathy first; " : ""}say you checked with five offices at once and sent the request with the case file so they won't have to explain again; mention any conflict for this option plainly; end with: nothing changes until a person approves, and you'll update them here.`,
+    `${result.summaryForLlm}\n\nRuhaan explicitly asked for Option ${option} (${picked.title}) and it has ALREADY been sent to the Dean of Students for approval. Write 2 short paragraphs: ${emergency ? "brief empathy first; " : ""}say you checked with five offices at once and sent the request with the case file so they won't have to explain again; mention any conflict for this option plainly; end with: nothing changes until a person approves, and you'll update them here.`,
     setSource,
   );
 }
@@ -576,7 +576,7 @@ async function officeInfo(emit: Emit, question: string, office: KbOffice, setSou
       const ctx = top.map((p, i) => `[${i + 1}] ${p.title} (${p.url})\n${p.text.slice(0, 1800)}`).join("\n\n");
       const msg = await complete([
         { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: `${KB_ANSWER_PROMPT.replace("finaid.vt.edu", site)}\n\nPassages:\n${ctx}\n\nJohn's question: ${question}` },
+        { role: "user", content: `${KB_ANSWER_PROMPT.replace("finaid.vt.edu", site)}\n\nPassages:\n${ctx}\n\nRuhaan's question: ${question}` },
       ]);
       const text = (msg.content ?? "").trim();
       if (text.includes("NOT_IN_KB")) {
@@ -641,7 +641,7 @@ function queueCounselor(question: string, reason: string, office: KbOffice = "fi
     status: "pending",
   });
   s.stats.escalations++;
-  addAudit({ caller: "John's personal agent", office: "staff", action: "escalate_to_human", decision: "allowed", dataShared: `Question text only → ${OFFICES[office].short}`, level: "L1" });
+  addAudit({ caller: "Ruhaan's personal agent", office: "staff", action: "escalate_to_human", decision: "allowed", dataShared: `Question text only → ${OFFICES[office].short}`, level: "L1" });
   addActivity(["personal", "approvals"]);
   touch();
 }
@@ -684,7 +684,7 @@ async function forceAdd(emit: Emit, messages: ChatMessage[], setSource: (s: "llm
   const secs = p.steps.map((st) => db().sections.find((x) => x.id === st.sectionId)!);
   step(emit, "personal_agent", `Signed plan found: ${secs.map((s, i) => `${p.steps[i].rank}: ${s.course}-${s.section}`).join(" → ")}`, "done", "L3", `Limits: max ${p.limits.maxCredits} credits · nothing before ${p.limits.earliestStart}`);
   const scripted = `You have a **signed plan** for next term: Plan A is ${secs[0].course}-${secs[0].section} (${secs[0].time}), then Plan B ${secs[1].course}-${secs[1].section} (${secs[1].time}), then Plan C ${secs[2].course} (${secs[2].time}). Your limits are ${p.limits.maxCredits} credits max and nothing before ${p.limits.earliestStart}.\n\nIf a seat fills, I'll move to the next plan automatically, but **only if it fits your limits**. Otherwise I'll stop and ask you. You can change or revoke the plan anytime on the Plans page.`;
-  await prose(emit, messages, scripted, `John asked about registration backups. Their signed plan: ${secs.map((s, i) => `Plan ${p.steps[i].rank}: ${s.course}-${s.section} ${s.time}`).join("; ")}. Limits: ${p.limits.maxCredits} credits max, nothing before ${p.limits.earliestStart}. Explain in 2 short paragraphs that you act automatically (L3) only inside these limits and otherwise stop and ask; she can revoke anytime on the Plans page.`, setSource);
+  await prose(emit, messages, scripted, `Ruhaan asked about registration backups. Their signed plan: ${secs.map((s, i) => `Plan ${p.steps[i].rank}: ${s.course}-${s.section} ${s.time}`).join("; ")}. Limits: ${p.limits.maxCredits} credits max, nothing before ${p.limits.earliestStart}. Explain in 2 short paragraphs that you act automatically (L3) only inside these limits and otherwise stop and ask; they can revoke anytime on the Plans page.`, setSource);
 }
 
 // ---------- General: real LLM tool loop ----------

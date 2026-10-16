@@ -106,7 +106,7 @@ export async function openCase(input: { summary: string; situation: string; pref
     step(emit, "personal_agent", `Case paused on ${outage.map((o) => OFFICES[o].short).join(", ")} step`, "blocked", "L0");
     if (outage.includes("financial_aid")) {
       s.staffQueue.unshift({ id: uid("q-"), caseId, queue: "financial_aid_counselor", title: `#${caseId}: scholarship impact needed`, reason: "Financial Aid agent unavailable during case evaluation", ts: Date.now(), status: "pending" });
-      addAudit({ caller: "John's personal agent", office: "staff", action: "route_to_counselor_queue", decision: "allowed", dataShared: "Case ID + question: scholarship impact of 3 options", caseId, level: "L1" });
+      addAudit({ caller: "Ruhaan's personal agent", office: "staff", action: "route_to_counselor_queue", decision: "allowed", dataShared: "Case ID + question: scholarship impact of 3 options", caseId, level: "L1" });
       step(emit, "personal_agent", "Routed to financial aid counselor queue", "done", "L1");
       addActivity(["personal", "approvals"]);
     }
@@ -157,7 +157,7 @@ export function submitForApproval(caseId: string, optionId: OptionCard["id"]) {
   const opt = c.options.find((o) => o.id === optionId)!;
   c.stopReason = `Action requires staff approval (${optionId === "C" ? "Medical withdrawal" : optionId === "B" ? "Incomplete" : "Reduced course load"} policy, DOS-2)`;
   s.staffQueue.unshift({ id: uid("q-"), caseId, queue: "dean_of_students", title: `#${caseId}: ${opt.title}`, reason: c.stopReason, ts: Date.now(), status: "pending" });
-  addAudit({ caller: "John (student)", office: "personal_agent", action: `select_option_${optionId}`, decision: "allowed", dataShared: `Chose Option ${optionId}: ${opt.title}`, caseId, level: "L2" });
+  addAudit({ caller: "Ruhaan (student)", office: "personal_agent", action: `select_option_${optionId}`, decision: "allowed", dataShared: `Chose Option ${optionId}: ${opt.title}`, caseId, level: "L2" });
   // Fire-and-forget: deliver the packet to the Dean of Students agent (through the gateway).
   void gateway.call("dean_of_students", "receive_case", {}, { caseId, level: "L1" });
   addActivity(["personal", "gateway", "approvals"]);
@@ -193,7 +193,7 @@ function planExecution(c: CaseRecord): TimelineStep[] {
   staff.status = "done";
   staff.ts = c.staffDecisionAt;
   staff.detail = c.staffNote ? `Note: “${c.staffNote}”` : "Approved without changes";
-  const close = mk("personal_agent", "Close the loop: confirmation sent to John", "L1");
+  const close = mk("personal_agent", "Close the loop: confirmation sent to Ruhaan", "L1");
   if (c.selectedOption === "B")
     return [
       staff,
@@ -262,7 +262,7 @@ async function execute(caseId: string) {
       await sleep(700);
       t.status = "done";
       t.detail = "Summary, next steps and the full audit trail are in your case.";
-      addAudit({ caller: "John's personal agent", office: "personal_agent", action: "close_the_loop", decision: "allowed", dataShared: "Confirmation to student only", caseId, level: "L1" });
+      addAudit({ caller: "Ruhaan's personal agent", office: "personal_agent", action: "close_the_loop", decision: "allowed", dataShared: "Confirmation to student only", caseId, level: "L1" });
       touch();
       continue;
     }

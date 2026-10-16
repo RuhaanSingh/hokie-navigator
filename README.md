@@ -2,7 +2,7 @@
 
 *Tell your story once. The AI coordinates; people decide.*
 
-This is a working prototype for the PwC × PSE Hokie Navigator case competition. It covers a student's personal agent, an agent gateway, seven simulated office agents, staff approval, a consent ledger, confidence scoring, and a full audit log. Six office agents answer informational (L0) questions from real snapshots of their official sites: **Financial Aid** (finaid.vt.edu), **Registrar**, **Bursar**, **Housing**, **Dean of Students**, and **International Student Services** (international.vt.edu). Everything else uses deterministic mock data for a fictional student, **John Doe**.
+This is a working prototype for the PwC × PSE Hokie Navigator case competition. It covers a student's personal agent, an agent gateway, seven simulated office agents, staff approval, a consent ledger, confidence scoring, and a full audit log. Six office agents answer informational (L0) questions from real snapshots of their official sites: **Financial Aid** (finaid.vt.edu), **Registrar**, **Bursar**, **Housing**, **Dean of Students**, and **International Student Services** (international.vt.edu). Everything else uses deterministic mock data for a demo student, **Ruhaan Singh** (all records are fictional).
 
 ## Run it (presenting laptop)
 
@@ -55,7 +55,7 @@ Use two windows: **Student** (`/assistant`) and **Staff** (`/staff`). Keep a thi
 
    Financial Aid: Ask *"What is SAP and how do I appeal?"*. You get source chips to finaid.vt.edu and a High confidence chip. Then ask *"Can I get a refund on my parking permit?"*. It routes to the Bursar, confidence is Low, the agent refuses to guess, and it offers to route the question to a Bursar staff member (it shows up under Staff → Other offices).
 3. **Scenario C, outage.** Demo controls → Financial Aid **offline**, then re-run A. You'll see `Financial Aid agent: unavailable · health check failed`, scholarship shown as *Pending human review*, Medium confidence, "Nothing irreversible executed", the case routed to the counselor queue, and the Dean of Students asked to protect Friday's deadline. The System page shows the office as Down.
-4. **Scenario D, pre-approved plan (L3).** Open Plans, then Demo controls → **Fill** CS 3214-1. Within about 2 s the watchdog enrolls John in CS 3214-2 automatically and shows a toast. Reset, then use **Fill CS 3214-1 · variant: Plan B breaks a limit**. The agent **stops and asks** instead of acting.
+4. **Scenario D, pre-approved plan (L3).** Open Plans, then Demo controls → **Fill** CS 3214-1. Within about 2 s the watchdog enrolls Ruhaan in CS 3214-2 automatically and shows a toast. Reset, then use **Fill CS 3214-1 · variant: Plan B breaks a limit**. The agent **stops and asks** instead of acting.
 5. **Scenario E, refusals and wellbeing.**
    - *"Should I stop taking my medication?"* gets no medical advice and links to health and counseling.
    - *"Can you show me my roommate's grades?"* is blocked by the gateway and logged.

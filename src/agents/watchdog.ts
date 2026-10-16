@@ -47,7 +47,7 @@ async function runPlanCheck(filledId: string) {
   const next = plan.steps[idx + 1];
   if (idx < 0 || !next) return;
   const sec = s.sections.find((x) => x.id === next.sectionId)!;
-  const check = await gateway.call("department", "check_section", { sectionId: sec.id }, { level: "L0", caller: "Watchdog (John's agent)" });
+  const check = await gateway.call("department", "check_section", { sectionId: sec.id }, { level: "L0", caller: "Watchdog (Ruhaan's agent)" });
   const credits = plan.baseCredits + sec.credits;
   const timeOk = sec.startMinutes >= plan.limits.earliestMinutes;
   const creditsOk = credits <= plan.limits.maxCredits;
@@ -55,7 +55,7 @@ async function runPlanCheck(filledId: string) {
 
   if (timeOk && creditsOk && seatsOk) {
     log(`Checking signed plan: Plan ${next.rank} within limits ✓ (${credits} credits, ${sec.time.replace(/^[A-Z]+ /, "")})`, "done", "L3", `Limits: max ${plan.limits.maxCredits} credits · nothing before ${plan.limits.earliestStart}`);
-    const r = await gateway.call("department", "enroll_section", { sectionId: sec.id }, { level: "L3", caller: "Watchdog (John's agent)" });
+    const r = await gateway.call("department", "enroll_section", { sectionId: sec.id }, { level: "L3", caller: "Watchdog (Ruhaan's agent)" });
     if (r.ok) {
       log(`L3: Enrolled in ${sec.course}-${sec.section} automatically`, "done", "L3", "Acted inside your signed plan · revocable · logged");
       addAlert({ kind: "seat", title: `Enrolled in ${sec.course}-${sec.section} (Plan ${next.rank})`, body: `Section ${filled.section} filled, so your agent used your signed plan: ${sec.time}, ${credits} credits total. Undo anytime from Plans.`, tone: "ok", action: { label: "View plan", href: "/plans" } });
@@ -66,9 +66,9 @@ async function runPlanCheck(filledId: string) {
   }
   const why = !timeOk ? `${sec.time} is before your ${plan.limits.earliestStart} limit` : !creditsOk ? `${credits} credits exceeds your ${plan.limits.maxCredits}-credit limit` : "no seats open";
   log(`Checking signed plan: Plan ${next.rank} outside limits ✗ (${why})`, "blocked", "L3");
-  log("Stopped: asking John instead of acting", "blocked", "L2", "L3 only runs inside the plan's limits");
+  log("Stopped: asking Ruhaan instead of acting", "blocked", "L2", "L3 only runs inside the plan's limits");
   s.pendingPlanDecision = { sectionId: sec.id, reason: why };
-  addAudit({ caller: "Watchdog (John's agent)", office: "personal_agent", action: "plan_step_outside_limits", decision: "blocked", reason: why, dataShared: "Nothing", level: "L3" });
+  addAudit({ caller: "Watchdog (Ruhaan's agent)", office: "personal_agent", action: "plan_step_outside_limits", decision: "blocked", reason: why, dataShared: "Nothing", level: "L3" });
   addAlert({ kind: "plan", title: `Plan ${next.rank} needs your OK`, body: `${filled.course}-${filled.section} filled. Plan ${next.rank} (${sec.course}-${sec.section}) is outside your limits: ${why}. Your agent did not act.`, tone: "warn", action: { label: "Decide", href: "/plans" } });
   addNotice({ title: "Your agent stopped and is asking", body: `Plan ${next.rank} is outside your limits (${why}).`, tone: "warn" });
 }
@@ -80,11 +80,11 @@ export async function decidePlan(choice: "approve" | "next" | "dismiss") {
   if (!pending) return;
   s.pendingPlanDecision = undefined;
   if (choice === "dismiss") {
-    log("John chose to do nothing for now", "done", "L2");
+    log("Ruhaan chose to do nothing for now", "done", "L2");
     return;
   }
   const targetId = choice === "approve" ? pending.sectionId : s.plan.steps[s.plan.steps.length - 1].sectionId;
-  const r = await gateway.call("department", "enroll_section", { sectionId: targetId }, { level: "L2", caller: "John's personal agent" });
+  const r = await gateway.call("department", "enroll_section", { sectionId: targetId }, { level: "L2", caller: "Ruhaan's personal agent" });
   const sec = s.sections.find((x) => x.id === targetId)!;
   if (r.ok) {
     log(`L2: Enrolled in ${sec.course}-${sec.section} after your confirmation`, "done", "L2");
