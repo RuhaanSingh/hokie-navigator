@@ -8,13 +8,14 @@ This is a working prototype for the PwC × PSE Hokie Navigator case competition.
 
 ```bash
 npm install
-cp .env.example .env.local        # then paste your Groq key into GROQ_API_KEY
+cp .env.example .env.local        # then paste your Groq key into GROQ_API_KEY (and optionally a second one into GROQ_API_KEY_BACKUP)
 npm run build && npm start        # http://localhost:3000. Present from the production build.
 ```
 
 - **No key or no Wi-Fi?** The app still works. Set `DEMO_MODE=scripted`, or switch the mode in Demo Controls. Scripted mode runs the same gateway and case pipeline, so the UI behaves the same way.
-- **Hybrid (default):** the app calls Groq. If a call errors, times out (6 s), or returns malformed tool calls, it falls back to the scripted path without showing an error, and skips the LLM for the next 60 s so the demo never waits on repeated timeouts.
+- **Hybrid (default):** the app calls Groq. If a call errors, times out (6 s), or returns malformed tool calls, it first retries with `GROQ_API_KEY_BACKUP` (if set), then falls back to the scripted path without showing an error, and skips the LLM for the next 60 s so the demo never waits on repeated timeouts.
 - State lives in server memory. A restart resets it, and so does **Reset demo state**. Don't deploy this to serverless hosting.
+- Model: `openai/gpt-oss-120b` at low reasoning effort (Groq retired `llama-3.3-70b-versatile`). Override with `GROQ_MODEL`. The free tier allows 8,000 tokens per minute, so very rapid back-to-back prompts can briefly fall back to scripted.
 - The Groq key is read server-side only (`src/agents/personal-agent.ts`) and never reaches the browser.
 
 ## Presenter controls

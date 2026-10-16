@@ -229,7 +229,7 @@ export function snapshot(): Snapshot {
     version: s.version,
     mode: s.mode,
     showSimBadges: s.showSimBadges,
-    llmConfigured: Boolean(process.env.GROQ_API_KEY),
+    llmConfigured: Boolean(process.env.GROQ_API_KEY || process.env.GROQ_API_KEY_BACKUP),
     officeHealth: s.officeHealth,
     consent: s.consent,
     cases: s.cases,

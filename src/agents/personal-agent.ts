@@ -69,32 +69,47 @@ export function detectIntent(text: string, lastIntent?: string): Intent {
 
 // ---------- LLM plumbing ----------
 
-const groqKey = () => process.env.GROQ_API_KEY;
-const MODEL = () => process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
-let client: Groq | null = null;
-const groq = () => (client ??= new Groq({ apiKey: groqKey(), timeout: 6000, maxRetries: 0 }));
+// Primary key first, then an optional backup key (e.g. a second account) if the primary errors or is rate-limited.
+const groqKeys = () => [process.env.GROQ_API_KEY, process.env.GROQ_API_KEY_BACKUP].filter((k): k is string => Boolean(k));
+const MODEL = () => process.env.GROQ_MODEL || "openai/gpt-oss-120b";
+const clients = new Map<string, Groq>();
+const groqFor = (key: string) => clients.get(key) ?? clients.set(key, new Groq({ apiKey: key, timeout: 6000, maxRetries: 0 })).get(key)!;
 
-// Circuit breaker: after an LLM failure, use scripted responses for a minute so the live demo never waits on repeated timeouts.
-const breaker = globalThis as unknown as { __hnLlmDownUntil?: number };
-const llmEnabled = () => db().mode !== "scripted" && Boolean(groqKey()) && (db().mode === "live" || Date.now() > (breaker.__hnLlmDownUntil ?? 0));
+// Circuit breaker: after an LLM failure on every key, use scripted responses for a minute so the live demo never waits on repeated timeouts.
+// __hnLlmKey remembers which key last worked so a dead primary isn't retried on every turn.
+const breaker = globalThis as unknown as { __hnLlmDownUntil?: number; __hnLlmKey?: number };
+const llmEnabled = () => db().mode !== "scripted" && groqKeys().length > 0 && (db().mode === "live" || Date.now() > (breaker.__hnLlmDownUntil ?? 0));
 
 type LlmMsg = Groq.Chat.Completions.ChatCompletionMessageParam;
 
 async function complete(messages: LlmMsg[], opts: { tools?: Groq.Chat.Completions.ChatCompletionTool[]; toolChoice?: Groq.Chat.Completions.ChatCompletionToolChoiceOption; temperature?: number } = {}) {
   const started = Date.now();
-  let res: Groq.Chat.Completions.ChatCompletion;
-  try {
-    res = await groq().chat.completions.create({
-      model: MODEL(),
-      messages,
-      tools: opts.tools,
-      tool_choice: opts.tools ? (opts.toolChoice ?? "auto") : undefined,
-      temperature: opts.temperature ?? 0.3,
-      max_tokens: 700,
-    });
-  } catch (e) {
+  let res: Groq.Chat.Completions.ChatCompletion | undefined;
+  const keys = groqKeys();
+  const first = (breaker.__hnLlmKey ?? 0) % keys.length;
+  const order = keys.map((_, j) => (first + j) % keys.length);
+  let lastErr: unknown;
+  for (const i of order) {
+    try {
+      res = await groqFor(keys[i]).chat.completions.create({
+        model: MODEL(),
+        messages,
+        tools: opts.tools,
+        tool_choice: opts.tools ? (opts.toolChoice ?? "auto") : undefined,
+        temperature: opts.temperature ?? 0.3,
+        max_tokens: 1200,
+        // gpt-oss is a reasoning model: keep reasoning short so replies stay fast and the token budget goes to the answer.
+        ...(MODEL().startsWith("openai/gpt-oss") ? { reasoning_effort: "low" as const } : {}),
+      });
+      breaker.__hnLlmKey = i;
+      break;
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  if (!res) {
     breaker.__hnLlmDownUntil = Date.now() + 60_000;
-    throw e;
+    throw lastErr;
   }
   addActivity(["personal", "router"]);
   db().stats.latencies.push(Date.now() - started);
@@ -102,6 +117,8 @@ async function complete(messages: LlmMsg[], opts: { tools?: Groq.Chat.Completion
 }
 
 async function streamText(emit: Emit, text: string) {
+  // gpt-oss sometimes cites as 【3】 or 【3†source】; the UI renders [3] as a source chip.
+  text = text.replace(/【(\d+)[^】]*】/g, "[$1]");
   const parts = text.match(/\S+\s*/g) ?? [];
   for (let i = 0; i < parts.length; i += 3) {
     emit({ type: "token", text: parts.slice(i, i + 3).join("") });
